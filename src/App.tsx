@@ -1,11 +1,13 @@
-import './App.css';
+import "./App.css";
+import Collection from "./components/Collection/Collection";
+import Documents from "./components/Documents/Documents";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        Firestore Query Studio
-      </header>
+      <Collection />
+      {/* TODO: pass collection name from Collection component click */}
+      <Documents collection="User"/>
     </div>
   );
 }

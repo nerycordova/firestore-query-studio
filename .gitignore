@@ -28,3 +28,6 @@ yarn-error.log*
 .firebase/
 .firebaserc
 
+#config files
+config.ts
+

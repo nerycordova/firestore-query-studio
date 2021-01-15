@@ -1,0 +1,6 @@
+.collection{
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	border-right: 1px solid #dadada;
+}
