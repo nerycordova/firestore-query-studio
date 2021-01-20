@@ -1,0 +1,14 @@
+.document{
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+}
+
+.field-name{
+	text-align: left;
+	color:gray;
+}
+
+.field-value{
+	text-align: left;
+}

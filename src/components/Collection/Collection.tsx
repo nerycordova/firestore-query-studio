@@ -12,7 +12,12 @@ import FolderOpen from "@material-ui/icons/FolderOpen";
 
 const firestore = firebase.firestore();
 
-export default function Collection() {
+type CollectionProps = {
+  selectedCollection: string;
+  onSelectCollection: (collection: string) => void;
+};
+
+export default function Collection(props: CollectionProps) {
   const [newCollection, setNewCollection] = useState<string>("");
   const [inputError, setInputError] = useState<boolean>(false);
   const [collections, setCollections] = useState<string[] | undefined>([]);
@@ -72,7 +77,12 @@ export default function Collection() {
           <List component="nav" aria-label="main mailbox folders">
             {collections.map((collection) => {
               return (
-                <ListItem button key={collection}>
+                <ListItem
+                  button
+                  key={collection}
+                  selected={collection === props.selectedCollection}
+                  onClick={() => props.onSelectCollection(collection)}
+                >
                   <ListItemIcon>
                     <FolderOpen />
                   </ListItemIcon>
