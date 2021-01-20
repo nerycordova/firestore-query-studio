@@ -25,13 +25,13 @@ export default function Documents(props: DocumentsProps) {
     //TODO: see if we can get only document IDs, otherwise might be worth caching document info
     //      so that we can use it when user clicks on document id
     setLoading(true);
-    const documents = await firestore
+    const result = await firestore
       .collection(props.collection)
       .limit(QUERY_LIMIT)
       .get();
     //TODO: handle case when collection is empty
     setLoading(false);
-    setDocuments(documents.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    setDocuments(result.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   };
 
   useEffect(() => {
