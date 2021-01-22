@@ -4,3 +4,16 @@
 	padding: 10px;
 	border-right: 1px solid #dadada;
 }
+
+pre{
+	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace
+}
+
+table tbody tr {
+	vertical-align: top;
+}
+
+table tbody tr:hover td{
+	background-color: rgba(0, 0, 0, 0.08);
+}

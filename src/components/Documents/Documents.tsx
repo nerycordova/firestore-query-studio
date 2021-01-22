@@ -6,6 +6,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import "./Documents.css";
+import { Button } from "@material-ui/core";
 const firestore = firebase.firestore();
 
 type DocumentsProps = {
@@ -17,21 +18,31 @@ type DocumentsProps = {
 export default function Documents(props: DocumentsProps) {
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [
+    lastRecord,
+    setLastRecord,
+  ] = useState<firebase.firestore.QueryDocumentSnapshot | null>(null);
 
   const QUERY_LIMIT = 20;
 
   const getDocuments = async () => {
     if (props.collection.length < 1) return;
-    //TODO: see if we can get only document IDs, otherwise might be worth caching document info
-    //      so that we can use it when user clicks on document id
     setLoading(true);
     const result = await firestore
       .collection(props.collection)
       .limit(QUERY_LIMIT)
+      .orderBy("email") //TODO: ask user to select sort parameter
+      .startAfter(lastRecord)
       .get();
     //TODO: handle case when collection is empty
     setLoading(false);
-    setDocuments(result.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+
+    setDocuments(
+      documents.concat(
+        result.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      )
+    );
+    setLastRecord(result.docs[result.docs.length - 1]);
   };
 
   useEffect(() => {
@@ -41,11 +52,6 @@ export default function Documents(props: DocumentsProps) {
   return (
     <div className="documents">
       <h1>Documents</h1>
-      {loading && (
-        <div style={{ marginLeft: "auto", marginRight: "auto" }}>
-          <CircularProgress />
-        </div>
-      )}
       {documents && documents.length > 0 && (
         <section>
           <List component="nav" aria-label="main mailbox folders">
@@ -54,7 +60,11 @@ export default function Documents(props: DocumentsProps) {
                 <ListItem
                   button
                   key={doc.id}
-                  selected={ props.selectedDocument ? doc.id === props.selectedDocument.id : false}
+                  selected={
+                    props.selectedDocument
+                      ? doc.id === props.selectedDocument.id
+                      : false
+                  }
                   onClick={() => props.onSelectDocument(doc)}
                 >
                   <ListItemText primary={doc.id} />
@@ -64,6 +74,12 @@ export default function Documents(props: DocumentsProps) {
           </List>
         </section>
       )}
+      {loading && (
+        <div style={{ marginLeft: "auto", marginRight: "auto" }}>
+          <CircularProgress />
+        </div>
+      )}
+      {lastRecord && <Button onClick={() => getDocuments()}>More</Button>}
     </div>
   );
 }
