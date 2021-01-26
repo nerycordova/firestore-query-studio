@@ -64,7 +64,7 @@ export default function Collection(props: CollectionProps) {
           />
           <IconButton
             color="primary"
-            aria-label="upload picture"
+            aria-label="colection name"
             component="span"
             onClick={addCollection}
           >

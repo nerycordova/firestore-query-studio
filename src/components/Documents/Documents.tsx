@@ -4,9 +4,13 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import IconButton from "@material-ui/core/IconButton";
+import Code from "@material-ui/icons/Code";
+import Button from "@material-ui/core/Button";
+
+import Filters from "../Filters/Filters";
 
 import "./Documents.css";
-import { Button } from "@material-ui/core";
 const firestore = firebase.firestore();
 
 type DocumentsProps = {
@@ -22,6 +26,10 @@ export default function Documents(props: DocumentsProps) {
     lastRecord,
     setLastRecord,
   ] = useState<firebase.firestore.QueryDocumentSnapshot | null>(null);
+
+  const [filterAnchor, setFilterAnchor] = useState<HTMLButtonElement | null>(
+    null
+  );
 
   const QUERY_LIMIT = 20;
 
@@ -49,30 +57,49 @@ export default function Documents(props: DocumentsProps) {
     getDocuments();
   }, []);
 
+  if (props.collection.length === 0) return null;
+
   return (
     <div className="documents">
-      <h1>Documents</h1>
+      <div className="documents-header">
+        <h1>{props.collection}</h1>
+        <div>
+          <IconButton
+            color="primary"
+            aria-label="collection filter"
+            component="span"
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
+              setFilterAnchor(event.currentTarget)
+            }
+          >
+            <Code />
+          </IconButton>
+        </div>
+        <Filters anchor={filterAnchor} onClose={() => setFilterAnchor(null)} />
+      </div>
       {documents && documents.length > 0 && (
-        <section>
-          <List component="nav" aria-label="main mailbox folders">
-            {documents.map((doc) => {
-              return (
-                <ListItem
-                  button
-                  key={doc.id}
-                  selected={
-                    props.selectedDocument
-                      ? doc.id === props.selectedDocument.id
-                      : false
-                  }
-                  onClick={() => props.onSelectDocument(doc)}
-                >
-                  <ListItemText primary={doc.id} />
-                </ListItem>
-              );
-            })}
-          </List>
-        </section>
+        <>
+          <section>
+            <List component="nav">
+              {documents.map((doc) => {
+                return (
+                  <ListItem
+                    button
+                    key={doc.id}
+                    selected={
+                      props.selectedDocument
+                        ? doc.id === props.selectedDocument.id
+                        : false
+                    }
+                    onClick={() => props.onSelectDocument(doc)}
+                  >
+                    <ListItemText primary={doc.id} />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </section>
+        </>
       )}
       {loading && (
         <div style={{ marginLeft: "auto", marginRight: "auto" }}>
