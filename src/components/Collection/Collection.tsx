@@ -50,7 +50,7 @@ export default function Collection(props: CollectionProps) {
   };
 
   return (
-    <div className="collection">
+    <div className="collections">
       <h1>Collections</h1>
       <section>
         <form autoComplete="off">

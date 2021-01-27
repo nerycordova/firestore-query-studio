@@ -4,44 +4,51 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import IconButton from "@material-ui/core/IconButton";
-import Code from "@material-ui/icons/Code";
 import Button from "@material-ui/core/Button";
+import Chip from "@material-ui/core/Chip";
+import Document from "../Document/Document";
 
-import Filters from "../Filters/Filters";
+import Sort from "../Sort/Sort";
 
 import "./Documents.css";
 const firestore = firebase.firestore();
 
 type DocumentsProps = {
-  collection: string;
-  selectedDocument: any;
-  onSelectDocument: (document: any) => void;
+  collection: string;  
+};
+
+type SortField = {
+  name: string;
+  direction: "asc" | "desc" | undefined;
 };
 
 export default function Documents(props: DocumentsProps) {
   const [documents, setDocuments] = useState<any[]>([]);
+  const [document, setDocument] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [
     lastRecord,
     setLastRecord,
   ] = useState<firebase.firestore.QueryDocumentSnapshot | null>(null);
+  const [filterAnchor, setFilterAnchor] = useState<HTMLDivElement | null>(null);
+  const [sortField, setSortField] = useState<SortField | null>(null);
 
-  const [filterAnchor, setFilterAnchor] = useState<HTMLButtonElement | null>(
-    null
-  );
-
-  const QUERY_LIMIT = 20;
+  const QUERY_LIMIT = 2;
 
   const getDocuments = async () => {
-    if (props.collection.length < 1) return;
+    if (props.collection.length < 1 || sortField === null) return;
     setLoading(true);
-    const result = await firestore
+    let query = firestore
       .collection(props.collection)
       .limit(QUERY_LIMIT)
-      .orderBy("email") //TODO: ask user to select sort parameter
-      .startAfter(lastRecord)
-      .get();
+      .orderBy(sortField.name, sortField.direction);
+
+    if (lastRecord !== undefined){
+      query = query.startAfter(lastRecord);
+    }
+    
+    const result = await query.get();
+
     //TODO: handle case when collection is empty
     setLoading(false);
 
@@ -54,59 +61,73 @@ export default function Documents(props: DocumentsProps) {
   };
 
   useEffect(() => {
+    setLastRecord(null);
+    setDocuments([]);
     getDocuments();
-  }, []);
+  }, [sortField]);
 
   if (props.collection.length === 0) return null;
 
   return (
-    <div className="documents">
+    <div className="collection">
       <div className="documents-header">
         <h1>{props.collection}</h1>
-        <div>
-          <IconButton
+        <div style={{ marginLeft: "10px" }}>
+          <Chip
+            label={`Sort by: ${
+              sortField ? `${sortField.name} ${sortField.direction}` : "?"
+            }`}
             color="primary"
-            aria-label="collection filter"
-            component="span"
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
+            variant="outlined"
+            onClick={(event: React.MouseEvent<HTMLDivElement>) =>
               setFilterAnchor(event.currentTarget)
             }
-          >
-            <Code />
-          </IconButton>
+          />
+          <Sort
+            anchor={filterAnchor}
+            onClose={() => setFilterAnchor(null)}
+            onSave={(criteria: SortField) => {
+              setSortField(criteria);
+              setFilterAnchor(null);
+            }}
+          />
         </div>
-        <Filters anchor={filterAnchor} onClose={() => setFilterAnchor(null)} />
       </div>
-      {documents && documents.length > 0 && (
-        <>
-          <section>
-            <List component="nav">
-              {documents.map((doc) => {
-                return (
-                  <ListItem
-                    button
-                    key={doc.id}
-                    selected={
-                      props.selectedDocument
-                        ? doc.id === props.selectedDocument.id
-                        : false
-                    }
-                    onClick={() => props.onSelectDocument(doc)}
-                  >
-                    <ListItemText primary={doc.id} />
-                  </ListItem>
-                );
-              })}
-            </List>
-          </section>
-        </>
-      )}
-      {loading && (
-        <div style={{ marginLeft: "auto", marginRight: "auto" }}>
-          <CircularProgress />
+      <div className="document-body">
+        <div className="documents">
+          {documents && documents.length > 0 && (
+            <>
+              <section>
+                <List component="nav">
+                  {documents.map((doc) => {
+                    return (
+                      <ListItem
+                        button
+                        key={doc.id}
+                        selected={
+                          document
+                            ? doc.id === document.id
+                            : false
+                        }
+                        onClick={() => setDocument(doc)}
+                      >
+                        <ListItemText primary={doc.id} />
+                      </ListItem>
+                    );
+                  })}
+                </List>
+              </section>
+            </>
+          )}
+          {loading && (
+            <div style={{ marginLeft: "auto", marginRight: "auto" }}>
+              <CircularProgress />
+            </div>
+          )}
+          {lastRecord && <Button onClick={() => getDocuments()}>More</Button>}
         </div>
-      )}
-      {lastRecord && <Button onClick={() => getDocuments()}>More</Button>}
+        <Document document={document} />
+      </div>
     </div>
   );
 }
