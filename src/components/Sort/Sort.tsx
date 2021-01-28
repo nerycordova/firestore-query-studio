@@ -55,6 +55,10 @@ export default function Sort(props: FilterProps) {
               label="Field"
               value={sortField}
               onChange={({ target: { value } }) => setSortField(value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter")
+                  props.onSave({ name: sortField, direction: sortDirection });
+              }}
             />
 
             <FormControl style={{ marginLeft: "5px" }}>

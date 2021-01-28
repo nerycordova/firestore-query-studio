@@ -14,7 +14,7 @@ import "./Documents.css";
 const firestore = firebase.firestore();
 
 type DocumentsProps = {
-  collection: string;  
+  collection: string;
 };
 
 type SortField = {
@@ -33,20 +33,23 @@ export default function Documents(props: DocumentsProps) {
   const [filterAnchor, setFilterAnchor] = useState<HTMLDivElement | null>(null);
   const [sortField, setSortField] = useState<SortField | null>(null);
 
-  const QUERY_LIMIT = 2;
+  const QUERY_LIMIT = 5;
 
   const getDocuments = async () => {
-    if (props.collection.length < 1 || sortField === null) return;
+    if (props.collection.length < 1) return;
     setLoading(true);
-    let query = firestore
-      .collection(props.collection)
-      .limit(QUERY_LIMIT)
-      .orderBy(sortField.name, sortField.direction);
+    let query = firestore.collection(props.collection).limit(QUERY_LIMIT);
 
-    if (lastRecord !== undefined){
+    if (sortField) {
+      query = query.orderBy(sortField.name, sortField.direction);
+    } else {
+      query = query.orderBy(firebase.firestore.FieldPath.documentId());
+    }
+
+    if (lastRecord) {
       query = query.startAfter(lastRecord);
     }
-    
+
     const result = await query.get();
 
     //TODO: handle case when collection is empty
@@ -61,10 +64,15 @@ export default function Documents(props: DocumentsProps) {
   };
 
   useEffect(() => {
-    setLastRecord(null);
-    setDocuments([]);
     getDocuments();
   }, [sortField]);
+
+  const resetView = (sort: SortField | null) => {
+    setSortField(sort);
+    setLastRecord(null);
+    setDocuments([]);
+    setFilterAnchor(null);
+  };
 
   if (props.collection.length === 0) return null;
 
@@ -82,19 +90,20 @@ export default function Documents(props: DocumentsProps) {
             onClick={(event: React.MouseEvent<HTMLDivElement>) =>
               setFilterAnchor(event.currentTarget)
             }
+            onDelete={sortField ? () => resetView(null) : undefined}
           />
           <Sort
             anchor={filterAnchor}
             onClose={() => setFilterAnchor(null)}
-            onSave={(criteria: SortField) => {
-              setSortField(criteria);
-              setFilterAnchor(null);
-            }}
+            onSave={(criteria: SortField) => resetView(criteria)}
           />
         </div>
       </div>
       <div className="document-body">
         <div className="documents">
+          {(!documents || documents.length === 0) && (
+            <div>No records found</div>
+          )}
           {documents && documents.length > 0 && (
             <>
               <section>
@@ -104,11 +113,7 @@ export default function Documents(props: DocumentsProps) {
                       <ListItem
                         button
                         key={doc.id}
-                        selected={
-                          document
-                            ? doc.id === document.id
-                            : false
-                        }
+                        selected={document ? doc.id === document.id : false}
                         onClick={() => setDocument(doc)}
                       >
                         <ListItemText primary={doc.id} />
