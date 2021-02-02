@@ -7,7 +7,8 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
 import Chip from "@material-ui/core/Chip";
 import Document from "../Document/Document";
-
+import IconButton from '@material-ui/core/IconButton';
+import FilterList from '@material-ui/icons/FilterList';
 import Sort from "../Sort/Sort";
 
 import "./Documents.css";
@@ -97,6 +98,11 @@ export default function Documents(props: DocumentsProps) {
             onClose={() => setFilterAnchor(null)}
             onSave={(criteria: SortField) => resetView(criteria)}
           />
+        </div>
+        <div style={{ marginLeft: "10px"}}>
+        <IconButton color="primary" component="span">
+          <FilterList />
+        </IconButton>
         </div>
       </div>
       <div className="document-body">
