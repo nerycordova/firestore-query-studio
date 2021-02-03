@@ -9,48 +9,64 @@ import Button from "@material-ui/core/Button";
 
 import "./Sort.css";
 
-type SortField = {
-  name: string;
-  direction: "asc" | "desc" | undefined;
+type Filter = {
+  id?: number;
+  field: string;
+  operator: "==" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
+  valueType: "String" | "Number" | "Boolean";
+  value: string | number | boolean;
 };
 
-type SortProps = {
+type FilterProps = {
   anchor: HTMLDivElement | null;
   onClose: () => void;
-  onSave: (criteria: SortField) => void;
-  sort?: SortField;
+  onSave: (filter: Filter) => void;
+  filter?: Filter;
 };
 
-export default function Sort(props: SortProps) {
-  const [sortField, setSortField] = React.useState<string>(
-    props.sort ? props.sort.name : ""
+export default function Sort(props: FilterProps) {
+  const [filter, setFilter] = React.useState<Filter>(
+    props.filter
+      ? props.filter
+      : {
+          field: "",
+          operator: "==",
+          valueType: "String",
+          value: "",
+        }
   );
-  const [sortDirection, setSortDirection] = React.useState<
-    "asc" | "desc" | undefined
-  >(props.sort ? props.sort.direction : "asc");
-  const [inputError, setInputError] = React.useState<boolean>(false);
+  const [fieldInputError, setFieldInputError] = React.useState<boolean>(false);
+  const [valueInputError, valueInputError] = React.useState<boolean>(false);
 
   const open = Boolean(props.anchor);
   const id = open ? "simple-popover" : undefined;
 
   const save = () => {
-    if (sortField.length < 1) {
-      setInputError(true);
-      return;
-    }
-    setInputError(false);
-    props.onSave({ name: sortField, direction: sortDirection });
+    // if (filter?.field?.length < 1) {
+    //   setInputError(true);
+    //   return;
+    // }
+    // setInputError(false);
+    // props.onSave({ name: sortField, direction: sortDirection });
   };
 
   const close = () => {
-    setInputError(false);
-    props.onClose();
+    // setInputError(false);
+    // props.onClose();
   };
 
   useEffect(() => {
-    setSortField(props.sort ? props.sort.name : "");
-    setSortDirection(props.sort ? props.sort.direction : "asc");
-  }, [props.sort]);
+    setFilter(
+      props.filter
+        ? props.filter
+        : {
+            field: "",
+            operator: "==",
+            valueType: "String",
+            value: "",
+          }
+    );
+  }, [props.filter]);
 
   if (!open) return null;
 
@@ -71,22 +87,25 @@ export default function Sort(props: SortProps) {
         }}
       >
         <div style={{ margin: "10px" }}>
-          <h3>Sort by</h3>
+          <h3>Filter by</h3>
           <form autoComplete="off">
             <TextField
               id="standard-basic"
               label="Field"
-              value={sortField}
-              onChange={({ target: { value } }) => setSortField(value)}
-              error={inputError}
-              helperText={inputError ? "Please, enter field name" : null}
+              value={filter.field}
+              onChange={({ target: { value } }) => {
+                const { field, ...otherProps } = filter;
+                setFilter({ field: value, ...otherProps });
+              }}
+              error={fieldInputError}
+              helperText={fieldInputError ? "Please, enter field name" : null}
               onKeyDown={(e) => {
-                if (e.key === "Enter")
-                  props.onSave({ name: sortField, direction: sortDirection });
+              //   if (e.key === "Enter")
+              //     props.onSave({ name: sortField, direction: sortDirection });
               }}
             />
 
-            <FormControl style={{ marginLeft: "5px" }}>
+            {/* <FormControl style={{ marginLeft: "5px" }}>
               <InputLabel id="demo-simple-select-label">Direction</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
@@ -106,7 +125,7 @@ export default function Sort(props: SortProps) {
                 <MenuItem value="asc">Ascending</MenuItem>
                 <MenuItem value="desc">Descending</MenuItem>
               </Select>
-            </FormControl>
+            </FormControl> */}
           </form>
           <div className="button-panel">
             <Button onClick={save}>Save</Button>

@@ -32,7 +32,7 @@ export default function Documents(props: DocumentsProps) {
     setLastRecord,
   ] = useState<firebase.firestore.QueryDocumentSnapshot | null>(null);
   const [filterAnchor, setFilterAnchor] = useState<HTMLDivElement | null>(null);
-  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortField, setSortField] = useState<SortField | undefined>(undefined);
 
   const QUERY_LIMIT = 5;
 
@@ -68,7 +68,7 @@ export default function Documents(props: DocumentsProps) {
     getDocuments();
   }, [sortField]);
 
-  const resetView = (sort: SortField | null) => {
+  const resetView = (sort: SortField | undefined) => {
     setSortField(sort);
     setLastRecord(null);
     setDocuments([]);
@@ -91,10 +91,11 @@ export default function Documents(props: DocumentsProps) {
             onClick={(event: React.MouseEvent<HTMLDivElement>) =>
               setFilterAnchor(event.currentTarget)
             }
-            onDelete={sortField ? () => resetView(null) : undefined}
+            onDelete={sortField ? () => resetView(undefined) : undefined}
           />
           <Sort
             anchor={filterAnchor}
+            sort={sortField}
             onClose={() => setFilterAnchor(null)}
             onSave={(criteria: SortField) => resetView(criteria)}
           />
