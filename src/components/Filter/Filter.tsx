@@ -7,12 +7,12 @@ import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 
-import "./Sort.css";
+import "./Filter.css";
 
 type Filter = {
   id?: number;
   field: string;
-  operator: "==" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
+  operator: "=" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
   valueType: "String" | "Number" | "Boolean";
   value: string | number | boolean;
 };
@@ -30,13 +30,13 @@ export default function Sort(props: FilterProps) {
       ? props.filter
       : {
           field: "",
-          operator: "==",
+          operator: "=",
           valueType: "String",
           value: "",
         }
   );
   const [fieldInputError, setFieldInputError] = React.useState<boolean>(false);
-  const [valueInputError, valueInputError] = React.useState<boolean>(false);
+  const [valueInputError, setValueInputError] = React.useState<boolean>(false);
 
   const open = Boolean(props.anchor);
   const id = open ? "simple-popover" : undefined;
@@ -51,8 +51,9 @@ export default function Sort(props: FilterProps) {
   };
 
   const close = () => {
-    // setInputError(false);
-    // props.onClose();
+    setFieldInputError(false);
+    setValueInputError(false);
+    props.onClose();
   };
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function Sort(props: FilterProps) {
         ? props.filter
         : {
             field: "",
-            operator: "==",
+            operator: "=",
             valueType: "String",
             value: "",
           }
@@ -90,7 +91,7 @@ export default function Sort(props: FilterProps) {
           <h3>Filter by</h3>
           <form autoComplete="off">
             <TextField
-              id="standard-basic"
+              id="field-name"
               label="Field"
               value={filter.field}
               onChange={({ target: { value } }) => {
@@ -100,32 +101,80 @@ export default function Sort(props: FilterProps) {
               error={fieldInputError}
               helperText={fieldInputError ? "Please, enter field name" : null}
               onKeyDown={(e) => {
-              //   if (e.key === "Enter")
-              //     props.onSave({ name: sortField, direction: sortDirection });
+                //   if (e.key === "Enter")
+                //     props.onSave({ name: sortField, direction: sortDirection });
               }}
             />
 
-            {/* <FormControl style={{ marginLeft: "5px" }}>
-              <InputLabel id="demo-simple-select-label">Direction</InputLabel>
+            <FormControl style={{ marginLeft: "10px", marginRight: "10px" }}>
+              <InputLabel id="operator-label"></InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={sortDirection}
+                id="operator"
+                labelId="operator-label"
+                value={filter.operator}
                 onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
+                  const value = event.target.value as string;
                   if (
-                    event.target.value === "asc" ||
-                    event.target.value === "desc"
+                    value === "=" ||
+                    value === "!=" ||
+                    value === "<" ||
+                    value === "<=" ||
+                    value === ">" ||
+                    value === ">="
                   ) {
-                    setSortDirection(event.target.value);
-                  } else {
-                    setSortDirection(undefined);
+                    const { operator, ...otherProps } = filter;
+                    setFilter({ operator: value, ...otherProps });
                   }
                 }}
               >
-                <MenuItem value="asc">Ascending</MenuItem>
-                <MenuItem value="desc">Descending</MenuItem>
+                {["=", "!=", "<", "<=", ">", ">="].map((o) => (
+                  <MenuItem value={o}>{o}</MenuItem>
+                ))}
               </Select>
-            </FormControl> */}
+            </FormControl>
+
+            <FormControl style={{ marginLeft: "10px", marginRight: "10px" }}>
+              <InputLabel id="type-label"></InputLabel>
+              <Select
+                id="type"
+                labelId="type-label"
+                value={filter.valueType}
+                onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
+                  const value = event.target.value as string;
+                  if (
+                    value === "String" ||
+                    value === "Number" ||
+                    value === "Boolean"
+                  ) {
+                    const { valueType, ...otherProps } = filter;
+                    setFilter({ valueType: value, ...otherProps });
+                  }
+                }}
+              >
+                {["String", "Number", "Boolean"].map((t) => (
+                  <MenuItem value={t}>{t}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              id="field-value"
+              label="Value"
+              value={filter.value}
+              onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
+                const { value, ...otherProps } = filter;
+                setFilter({
+                  value: event.target.value as string,
+                  ...otherProps,
+                });
+              }}
+              error={valueInputError}
+              helperText={valueInputError ? "Please, enter a value" : null}
+              onKeyDown={(e) => {
+                //   if (e.key === "Enter")
+                //     props.onSave({ name: sortField, direction: sortDirection });
+              }}
+            />
           </form>
           <div className="button-panel">
             <Button onClick={save}>Save</Button>

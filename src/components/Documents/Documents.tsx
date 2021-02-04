@@ -7,9 +7,10 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
 import Chip from "@material-ui/core/Chip";
 import Document from "../Document/Document";
-import IconButton from '@material-ui/core/IconButton';
-import FilterList from '@material-ui/icons/FilterList';
+import IconButton from "@material-ui/core/IconButton";
+import FilterList from "@material-ui/icons/FilterList";
 import Sort from "../Sort/Sort";
+import Filter from "../Filter/Filter";
 
 import "./Documents.css";
 const firestore = firebase.firestore();
@@ -31,8 +32,10 @@ export default function Documents(props: DocumentsProps) {
     lastRecord,
     setLastRecord,
   ] = useState<firebase.firestore.QueryDocumentSnapshot | null>(null);
-  const [filterAnchor, setFilterAnchor] = useState<HTMLDivElement | null>(null);
+  const [sortAnchor, setSortAnchor] = useState<HTMLDivElement | null>(null);
   const [sortField, setSortField] = useState<SortField | undefined>(undefined);
+
+  const [filterAnchor, setFilterAnchor] = useState<HTMLDivElement | null>(null);
 
   const QUERY_LIMIT = 5;
 
@@ -72,7 +75,7 @@ export default function Documents(props: DocumentsProps) {
     setSortField(sort);
     setLastRecord(null);
     setDocuments([]);
-    setFilterAnchor(null);
+    setSortAnchor(null);
   };
 
   if (props.collection.length === 0) return null;
@@ -89,21 +92,32 @@ export default function Documents(props: DocumentsProps) {
             color="primary"
             variant="outlined"
             onClick={(event: React.MouseEvent<HTMLDivElement>) =>
-              setFilterAnchor(event.currentTarget)
+              setSortAnchor(event.currentTarget)
             }
             onDelete={sortField ? () => resetView(undefined) : undefined}
           />
           <Sort
-            anchor={filterAnchor}
+            anchor={sortAnchor}
             sort={sortField}
-            onClose={() => setFilterAnchor(null)}
+            onClose={() => setSortAnchor(null)}
             onSave={(criteria: SortField) => resetView(criteria)}
           />
         </div>
-        <div style={{ marginLeft: "10px"}}>
-        <IconButton color="primary" component="span">
-          <FilterList />
-        </IconButton>
+        <div style={{ marginLeft: "10px" }}>
+          <IconButton
+            color="primary"
+            component="span"
+            onClick={(event: React.MouseEvent<HTMLDivElement>) => {
+              setFilterAnchor(event.currentTarget);
+            }}
+          >
+            <FilterList />
+          </IconButton>
+          <Filter
+            anchor={filterAnchor}
+            onClose={() => setFilterAnchor(null)}
+            onSave={() => {}}
+          />
         </div>
       </div>
       <div className="document-body">
