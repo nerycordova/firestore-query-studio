@@ -96,12 +96,14 @@ export default function Documents(props: DocumentsProps) {
             }
             onDelete={sortField ? () => resetView(undefined) : undefined}
           />
-          <Sort
-            anchor={sortAnchor}
-            sort={sortField}
-            onClose={() => setSortAnchor(null)}
-            onSave={(criteria: SortField) => resetView(criteria)}
-          />
+          {sortAnchor && (
+            <Sort
+              anchor={sortAnchor}
+              sort={sortField}
+              onClose={() => setSortAnchor(null)}
+              onSave={(criteria: SortField) => resetView(criteria)}
+            />
+          )}
         </div>
         <div style={{ marginLeft: "10px" }}>
           <IconButton
@@ -113,11 +115,13 @@ export default function Documents(props: DocumentsProps) {
           >
             <FilterList />
           </IconButton>
-          <Filter
-            anchor={filterAnchor}
-            onClose={() => setFilterAnchor(null)}
-            onSave={() => {}}
-          />
+          {filterAnchor && (
+            <Filter
+              anchor={filterAnchor}
+              onClose={() => setFilterAnchor(null)}
+              onSave={() => {}}
+            />
+          )}
         </div>
       </div>
       <div className="document-body">

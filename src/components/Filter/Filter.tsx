@@ -14,7 +14,7 @@ type Filter = {
   field: string;
   operator: "=" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
   valueType: "String" | "Number" | "Boolean";
-  value: string | number | boolean;
+  value: string | number;
 };
 
 type FilterProps = {
@@ -25,7 +25,7 @@ type FilterProps = {
 };
 
 export default function Sort(props: FilterProps) {
-  const [filter, setFilter] = React.useState<Filter>(
+  const [filter, setFilter] = useState<Filter>(
     props.filter
       ? props.filter
       : {
@@ -35,8 +35,8 @@ export default function Sort(props: FilterProps) {
           value: "",
         }
   );
-  const [fieldInputError, setFieldInputError] = React.useState<boolean>(false);
-  const [valueInputError, setValueInputError] = React.useState<boolean>(false);
+  const [fieldInputError, setFieldInputError] = useState<boolean>(false);
+  const [valueInputError, setValueInputError] = useState<boolean>(false);
 
   const open = Boolean(props.anchor);
   const id = open ? "simple-popover" : undefined;
@@ -140,14 +140,19 @@ export default function Sort(props: FilterProps) {
                 labelId="type-label"
                 value={filter.valueType}
                 onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
-                  const value = event.target.value as string;
+                  const selectedType = event.target.value as string;
                   if (
-                    value === "String" ||
-                    value === "Number" ||
-                    value === "Boolean"
+                    selectedType === "String" ||
+                    selectedType === "Number" ||
+                    selectedType === "Boolean"
                   ) {
-                    const { valueType, ...otherProps } = filter;
-                    setFilter({ valueType: value, ...otherProps });
+                    const { valueType, value, ...otherProps } = filter;
+                    //reset value when value type changes
+                    setFilter({
+                      valueType: selectedType,
+                      value: selectedType === "Boolean" ? "True" : "",
+                      ...otherProps,
+                    });
                   }
                 }}
               >
@@ -157,24 +162,45 @@ export default function Sort(props: FilterProps) {
               </Select>
             </FormControl>
 
-            <TextField
-              id="field-value"
-              label="Value"
-              value={filter.value}
-              onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
-                const { value, ...otherProps } = filter;
-                setFilter({
-                  value: event.target.value as string,
-                  ...otherProps,
-                });
-              }}
-              error={valueInputError}
-              helperText={valueInputError ? "Please, enter a value" : null}
-              onKeyDown={(e) => {
-                //   if (e.key === "Enter")
-                //     props.onSave({ name: sortField, direction: sortDirection });
-              }}
-            />
+            {filter.valueType === "Boolean" ? (
+              <FormControl style={{ marginLeft: "10px", marginRight: "10px" }}>
+                <InputLabel id="boolean-value-label"></InputLabel>
+                <Select
+                  id="type"
+                  labelId="boolean-value-label"
+                  value={filter.value}
+                  onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
+                    const selectedValue = event.target.value as string;
+                    if (selectedValue === "True" || selectedValue === "False") {
+                      const { value, ...otherProps } = filter;
+                      setFilter({ value: selectedValue, ...otherProps });
+                    }
+                  }}
+                >
+                  <MenuItem value="True">True</MenuItem>
+                  <MenuItem value="False">False</MenuItem>
+                </Select>
+              </FormControl>
+            ) : (
+              <TextField
+                id="field-value"
+                label="Value"
+                value={filter.value}
+                onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
+                  const { value, ...otherProps } = filter;
+                  setFilter({
+                    value: event.target.value as string,
+                    ...otherProps,
+                  });
+                }}
+                error={valueInputError}
+                helperText={valueInputError ? "Please, enter a value" : null}
+                onKeyDown={(e) => {
+                  //   if (e.key === "Enter")
+                  //     props.onSave({ name: sortField, direction: sortDirection });
+                }}
+              />
+            )}
           </form>
           <div className="button-panel">
             <Button onClick={save}>Save</Button>

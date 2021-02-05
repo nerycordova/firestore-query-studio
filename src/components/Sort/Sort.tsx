@@ -44,6 +44,8 @@ export default function Sort(props: SortProps) {
 
   const close = () => {
     setInputError(false);
+    setSortField("");
+    setSortDirection("asc");
     props.onClose();
   };
 
@@ -52,68 +54,64 @@ export default function Sort(props: SortProps) {
     setSortDirection(props.sort ? props.sort.direction : "asc");
   }, [props.sort]);
 
-  if (!open) return null;
-
   return (
-    <div>
-      <Popover
-        id={id}
-        open={open}
-        anchorEl={props.anchor}
-        onClose={props.onClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "left",
-        }}
-      >
-        <div style={{ margin: "10px" }}>
-          <h3>Sort by</h3>
-          <form autoComplete="off">
-            <TextField
-              id="standard-basic"
-              label="Field"
-              value={sortField}
-              onChange={({ target: { value } }) => setSortField(value)}
-              error={inputError}
-              helperText={inputError ? "Please, enter field name" : null}
-              onKeyDown={(e) => {
-                if (e.key === "Enter")
-                  props.onSave({ name: sortField, direction: sortDirection });
-              }}
-            />
+    <Popover
+      id={id}
+      open={open}
+      anchorEl={props.anchor}
+      onClose={close}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "center",
+      }}
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "left",
+      }}
+    >
+      <div style={{ margin: "10px" }}>
+        <h3>Sort by</h3>
+        <form autoComplete="off">
+          <TextField
+            id="standard-basic"
+            label="Field"
+            value={sortField}
+            onChange={({ target: { value } }) => setSortField(value)}
+            error={inputError}
+            helperText={inputError ? "Please, enter field name" : null}
+            onKeyDown={(e) => {
+              if (e.key === "Enter")
+                props.onSave({ name: sortField, direction: sortDirection });
+            }}
+          />
 
-            <FormControl style={{ marginLeft: "5px" }}>
-              <InputLabel id="demo-simple-select-label">Direction</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={sortDirection}
-                onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
-                  if (
-                    event.target.value === "asc" ||
-                    event.target.value === "desc"
-                  ) {
-                    setSortDirection(event.target.value);
-                  } else {
-                    setSortDirection(undefined);
-                  }
-                }}
-              >
-                <MenuItem value="asc">Ascending</MenuItem>
-                <MenuItem value="desc">Descending</MenuItem>
-              </Select>
-            </FormControl>
-          </form>
-          <div className="button-panel">
-            <Button onClick={save}>Save</Button>
-            <Button onClick={close}>Cancel</Button>
-          </div>
+          <FormControl style={{ marginLeft: "5px" }}>
+            <InputLabel id="demo-simple-select-label">Direction</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={sortDirection}
+              onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
+                if (
+                  event.target.value === "asc" ||
+                  event.target.value === "desc"
+                ) {
+                  setSortDirection(event.target.value);
+                } else {
+                  setSortDirection(undefined);
+                }
+              }}
+            >
+              <MenuItem value="asc">Ascending</MenuItem>
+              <MenuItem value="desc">Descending</MenuItem>
+            </Select>
+          </FormControl>
+        </form>
+        <div className="button-panel">
+          <Button onClick={save}>Save</Button>
+          <Button onClick={close}>Cancel</Button>
         </div>
-      </Popover>
-    </div>
+      </div>
+    </Popover>
   );
 }
