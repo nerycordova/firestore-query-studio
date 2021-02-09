@@ -8,6 +8,7 @@ import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 
 import "./Filter.css";
+import { FlashOffTwoTone } from "@material-ui/icons";
 
 type Filter = {
   id?: number;
@@ -42,12 +43,20 @@ export default function Sort(props: FilterProps) {
   const id = open ? "simple-popover" : undefined;
 
   const save = () => {
-    // if (filter?.field?.length < 1) {
-    //   setInputError(true);
-    //   return;
-    // }
-    // setInputError(false);
-    // props.onSave({ name: sortField, direction: sortDirection });
+    if (filter.field.length < 1) {
+      setFieldInputError(true);
+      return;
+    } else {
+      setFieldInputError(false);
+    }
+    if (filter.value.toLocaleString().length < 1) {
+      setValueInputError(true);
+      return;
+    } else {
+      setValueInputError(false);
+    }
+
+    props.onSave(filter);
   };
 
   const close = () => {

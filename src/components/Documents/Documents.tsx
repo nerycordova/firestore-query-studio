@@ -24,6 +24,14 @@ type SortField = {
   direction: "asc" | "desc" | undefined;
 };
 
+type Filter = {
+  id?: number;
+  field: string;
+  operator: "=" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
+  valueType: "String" | "Number" | "Boolean";
+  value: string | number;
+};
+
 export default function Documents(props: DocumentsProps) {
   const [documents, setDocuments] = useState<any[]>([]);
   const [document, setDocument] = useState<any>(null);
@@ -36,8 +44,37 @@ export default function Documents(props: DocumentsProps) {
   const [sortField, setSortField] = useState<SortField | undefined>(undefined);
 
   const [filterAnchor, setFilterAnchor] = useState<HTMLDivElement | null>(null);
+  const [filterList, setFilterList] = useState<Filter[]>([]);
+  const [editingFilter, setEditingFilter] = useState<Filter | undefined>(
+    undefined
+  );
 
   const QUERY_LIMIT = 5;
+
+  const saveFilter = (filter: Filter) => {
+    if (filter.id) {
+      const fl = filterList;
+      const index = filterList.findIndex((f) => f.id === filter.id);
+      fl[index] = filter;
+      setFilterList(fl);
+    } else {
+      filter.id = filterList.length + 1;
+      const list = filterList;
+      list.push(filter);
+      setFilterList(list);
+    }
+
+    setFilterAnchor(null);
+  };
+
+  const deleteFilter = (filter: Filter) => {
+    if (filter.id) {
+      const l = filterList;
+      const index = l.indexOf( i => i.id === filter.id);
+      l.slice(index, 1);
+      setFilterList(l);
+    }
+  };
 
   const getDocuments = async () => {
     if (props.collection.length < 1) return;
@@ -117,11 +154,29 @@ export default function Documents(props: DocumentsProps) {
           </IconButton>
           {filterAnchor && (
             <Filter
+              filter={editingFilter}
               anchor={filterAnchor}
               onClose={() => setFilterAnchor(null)}
-              onSave={() => {}}
+              onSave={(filter: Filter) => saveFilter(filter)}
             />
           )}
+        </div>
+        <div style={{ marginLeft: "10px" }}>
+          {filterList.map((f) => {
+            return (
+              <Chip
+                key={f.id}
+                label={`${f.field} ${f.operator} ${f.value}`}
+                color="primary"
+                variant="outlined"
+                onClick={(event: React.MouseEvent<HTMLDivElement>) => {
+                  setFilterAnchor(event.currentTarget);
+                  setEditingFilter(f);
+                }}
+                onDelete={() => deleteFilter(f)}
+              />
+            );
+          })}
         </div>
       </div>
       <div className="document-body">
