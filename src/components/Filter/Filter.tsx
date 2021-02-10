@@ -13,7 +13,7 @@ import { FlashOffTwoTone } from "@material-ui/icons";
 type Filter = {
   id?: number;
   field: string;
-  operator: "=" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
+  operator: "==" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
   valueType: "String" | "Number" | "Boolean";
   value: string | number;
 };
@@ -31,7 +31,7 @@ export default function Sort(props: FilterProps) {
       ? props.filter
       : {
           field: "",
-          operator: "=",
+          operator: "==",
           valueType: "String",
           value: "",
         }
@@ -71,7 +71,7 @@ export default function Sort(props: FilterProps) {
         ? props.filter
         : {
             field: "",
-            operator: "=",
+            operator: "==",
             valueType: "String",
             value: "",
           }
@@ -110,8 +110,7 @@ export default function Sort(props: FilterProps) {
               error={fieldInputError}
               helperText={fieldInputError ? "Please, enter field name" : null}
               onKeyDown={(e) => {
-                //   if (e.key === "Enter")
-                //     props.onSave({ name: sortField, direction: sortDirection });
+                if (e.key === "Enter") save();
               }}
             />
 
@@ -124,7 +123,7 @@ export default function Sort(props: FilterProps) {
                 onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
                   const value = event.target.value as string;
                   if (
-                    value === "=" ||
+                    value === "==" ||
                     value === "!=" ||
                     value === "<" ||
                     value === "<=" ||
@@ -136,7 +135,7 @@ export default function Sort(props: FilterProps) {
                   }
                 }}
               >
-                {["=", "!=", "<", "<=", ">", ">="].map((o) => (
+                {["==", "!=", "<", "<=", ">", ">="].map((o) => (
                   <MenuItem value={o}>{o}</MenuItem>
                 ))}
               </Select>
@@ -205,8 +204,7 @@ export default function Sort(props: FilterProps) {
                 error={valueInputError}
                 helperText={valueInputError ? "Please, enter a value" : null}
                 onKeyDown={(e) => {
-                  //   if (e.key === "Enter")
-                  //     props.onSave({ name: sortField, direction: sortDirection });
+                  if (e.key === "Enter") save();
                 }}
               />
             )}

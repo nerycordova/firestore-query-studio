@@ -27,7 +27,7 @@ type SortField = {
 type Filter = {
   id?: number;
   field: string;
-  operator: "=" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
+  operator: "==" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
   valueType: "String" | "Number" | "Boolean";
   value: string | number;
 };
@@ -53,27 +53,25 @@ export default function Documents(props: DocumentsProps) {
 
   const saveFilter = (filter: Filter) => {
     if (filter.id) {
-      const fl = filterList;
-      const index = filterList.findIndex((f) => f.id === filter.id);
-      fl[index] = filter;
-      setFilterList(fl);
+      setFilterList(
+        filterList.map((f: Filter) => (f.id === filter.id ? filter : f))
+      );
     } else {
-      filter.id = filterList.length + 1;
-      const list = filterList;
-      list.push(filter);
-      setFilterList(list);
+      filter.id = new Date().getTime();
+      setFilterList([...filterList, filter]);
     }
 
     setFilterAnchor(null);
+    setLastRecord(null);
+    setDocuments([]);
   };
 
   const deleteFilter = (filter: Filter) => {
     if (filter.id) {
-      const l = filterList;
-      const index = l.indexOf( i => i.id === filter.id);
-      l.slice(index, 1);
-      setFilterList(l);
+      setFilterList(filterList.filter((f) => f.id !== filter.id));
     }
+    setLastRecord(null);
+    setDocuments([]);
   };
 
   const getDocuments = async () => {
@@ -85,6 +83,18 @@ export default function Documents(props: DocumentsProps) {
       query = query.orderBy(sortField.name, sortField.direction);
     } else {
       query = query.orderBy(firebase.firestore.FieldPath.documentId());
+    }
+
+    if (filterList.length > 0) {
+      filterList.forEach((filter: Filter) => {
+        query = query.where(
+          filter.field,
+          filter.operator,
+          filter.valueType === "Boolean"
+            ? filter.value === "True"
+            : filter.value
+        );
+      });
     }
 
     if (lastRecord) {
@@ -104,10 +114,17 @@ export default function Documents(props: DocumentsProps) {
     setLastRecord(result.docs[result.docs.length - 1]);
   };
 
+  //TODO: fix useEffect dependencies
   useEffect(() => {
     getDocuments();
-  }, [sortField]);
+  }, [sortField, filterList]);
 
+  //TODO: fix useEffect dependecies
+  useEffect( () => {
+    getDocuments();
+  } , [filterList])
+
+  //TODO : improve resetView function (should not receive sort parameter)
   const resetView = (sort: SortField | undefined) => {
     setSortField(sort);
     setLastRecord(null);
@@ -162,11 +179,12 @@ export default function Documents(props: DocumentsProps) {
           )}
         </div>
         <div style={{ marginLeft: "10px" }}>
-          {filterList.map((f) => {
+          {filterList.map((f, index) => {
             return (
               <Chip
                 key={f.id}
                 label={`${f.field} ${f.operator} ${f.value}`}
+                style={index > 0 ? { marginLeft: "10px" } : undefined}
                 color="primary"
                 variant="outlined"
                 onClick={(event: React.MouseEvent<HTMLDivElement>) => {
