@@ -11,9 +11,24 @@ import IconButton from "@material-ui/core/IconButton";
 import FilterList from "@material-ui/icons/FilterList";
 import Sort from "../Sort/Sort";
 import Filter from "../Filter/Filter";
-
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Slide from "@material-ui/core/Slide";
+import { TransitionProps } from "@material-ui/core/transitions";
 import "./Documents.css";
+
+const Transition = React.forwardRef(function Transition(
+  props: TransitionProps & { children?: React.ReactElement<any, any> },
+  ref: React.Ref<unknown>
+) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 const firestore = firebase.firestore();
+type DocumentSnapshot = firebase.firestore.QueryDocumentSnapshot;
 
 type DocumentsProps = {
   collection: string;
@@ -36,18 +51,15 @@ export default function Documents(props: DocumentsProps) {
   const [documents, setDocuments] = useState<any[]>([]);
   const [document, setDocument] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [
-    lastRecord,
-    setLastRecord,
-  ] = useState<firebase.firestore.QueryDocumentSnapshot | null>(null);
+  const [lastRecord, setLastRecord] = useState<DocumentSnapshot | null>(null);
   const [sortAnchor, setSortAnchor] = useState<HTMLDivElement | null>(null);
   const [sortField, setSortField] = useState<SortField | undefined>(undefined);
-
   const [filterAnchor, setFilterAnchor] = useState<HTMLDivElement | null>(null);
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [editingFilter, setEditingFilter] = useState<Filter | undefined>(
     undefined
   );
+  const [fetchError, setFetchError] = useState<string | undefined>(undefined);
 
   const QUERY_LIMIT = 5;
 
@@ -73,56 +85,60 @@ export default function Documents(props: DocumentsProps) {
     setLastRecord(null);
     setDocuments([]);
   };
-
-  const getDocuments = async () => {
-    if (props.collection.length < 1) return;
-    setLoading(true);
-    let query = firestore.collection(props.collection).limit(QUERY_LIMIT);
-
-    if (sortField) {
-      query = query.orderBy(sortField.name, sortField.direction);
-    } else {
-      query = query.orderBy(firebase.firestore.FieldPath.documentId());
-    }
-
-    if (filterList.length > 0) {
-      filterList.forEach((filter: Filter) => {
-        query = query.where(
-          filter.field,
-          filter.operator,
-          filter.valueType === "Boolean"
-            ? filter.value === "True"
-            : filter.value
-        );
-      });
-    }
-
-    if (lastRecord) {
-      query = query.startAfter(lastRecord);
-    }
-
-    const result = await query.get();
-
-    //TODO: handle case when collection is empty
-    setLoading(false);
-
-    setDocuments(
-      documents.concat(
-        result.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      )
-    );
-    setLastRecord(result.docs[result.docs.length - 1]);
-  };
-
-  //TODO: fix useEffect dependencies
+  
   useEffect(() => {
+    const getDocuments = async () => {
+      if (props.collection.length < 1) return;
+      setLoading(true);
+      let query = firestore.collection(props.collection).limit(QUERY_LIMIT);
+  
+      if (sortField) {
+        query = query.orderBy(sortField.name, sortField.direction);
+      } else {
+        query = query.orderBy(firebase.firestore.FieldPath.documentId());
+      }
+  
+      if (filterList.length > 0) {
+        filterList.forEach((filter: Filter) => {
+          query = query.where(
+            filter.field,
+            filter.operator,
+            filter.valueType === "Boolean"
+              ? filter.value === "True"
+              : filter.value
+          );
+        });
+      }
+  
+      if (lastRecord) {
+        query = query.startAfter(lastRecord);
+      }
+  
+      try {
+        const result = await query.get();
+  
+        //TODO: handle case when collection is empty
+        setLoading(false);
+  
+        setDocuments( documents => 
+          documents.concat(
+            result.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          )
+        );
+        setLastRecord(result.docs[result.docs.length - 1]);
+      } catch (error) {
+        setLoading(false);
+        setFetchError(
+          error.message
+            ? error.message
+            : "There has been an error while running your query. Please check the console."
+        );
+        console.log(error);
+      }
+    };
     getDocuments();
-  }, [sortField, filterList]);
+  }, [sortField, filterList, lastRecord, props.collection]);
 
-  //TODO: fix useEffect dependecies
-  useEffect( () => {
-    getDocuments();
-  } , [filterList])
 
   //TODO : improve resetView function (should not receive sort parameter)
   const resetView = (sort: SortField | undefined) => {
@@ -227,10 +243,35 @@ export default function Documents(props: DocumentsProps) {
               <CircularProgress />
             </div>
           )}
-          {lastRecord && <Button onClick={() => getDocuments()}>More</Button>}
+          {/* TODO: fix MORE button */}
+          {/* {lastRecord && <Button onClick={() => getDocuments()}>More</Button>} */}
         </div>
         <Document document={document} />
       </div>
+      {fetchError && (
+        <>
+          <Dialog
+            open={Boolean(fetchError)}
+            TransitionComponent={Transition}
+            keepMounted
+            onClose={() => setFetchError(undefined)}
+            aria-labelledby="alert-dialog-slide-title"
+            aria-describedby="alert-dialog-slide-description"
+          >
+            <DialogTitle id="alert-dialog-slide-title">Error</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-slide-description">
+                {fetchError}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setFetchError(undefined)} color="primary">
+                Ok
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 }
