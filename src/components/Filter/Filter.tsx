@@ -8,9 +8,8 @@ import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 
 import "./Filter.css";
-import { FlashOffTwoTone } from "@material-ui/icons";
 
-type Filter = {
+type FilterType = {
   id?: number;
   field: string;
   operator: "==" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
@@ -21,20 +20,20 @@ type Filter = {
 type FilterProps = {
   anchor: HTMLDivElement | null;
   onClose: () => void;
-  onSave: (filter: Filter) => void;
-  filter?: Filter;
+  onSave: (filter: FilterType) => void;
+  filter?: FilterType;
 };
 
-export default function Sort(props: FilterProps) {
-  const [filter, setFilter] = useState<Filter>(
-    props.filter
-      ? props.filter
-      : {
-          field: "",
-          operator: "==",
-          valueType: "String",
-          value: "",
-        }
+const emptyFilter: FilterType = {
+  field: "",
+  operator: "==",
+  valueType: "String",
+  value: "",
+};
+
+export default function Filter(props: FilterProps) {
+  const [filter, setFilter] = useState<FilterType>(
+    props.filter ? props.filter : emptyFilter
   );
   const [fieldInputError, setFieldInputError] = useState<boolean>(false);
   const [valueInputError, setValueInputError] = useState<boolean>(false);
@@ -62,20 +61,12 @@ export default function Sort(props: FilterProps) {
   const close = () => {
     setFieldInputError(false);
     setValueInputError(false);
+    setFilter(emptyFilter);
     props.onClose();
   };
 
   useEffect(() => {
-    setFilter(
-      props.filter
-        ? props.filter
-        : {
-            field: "",
-            operator: "==",
-            valueType: "String",
-            value: "",
-          }
-    );
+    setFilter(props.filter ? props.filter : emptyFilter);
   }, [props.filter]);
 
   if (!open) return null;
@@ -135,8 +126,10 @@ export default function Sort(props: FilterProps) {
                   }
                 }}
               >
-                {["==", "!=", "<", "<=", ">", ">="].map((o) => (
-                  <MenuItem value={o}>{o}</MenuItem>
+                {["==", "!=", "<", "<=", ">", ">="].map((o, index) => (
+                  <MenuItem key={`condition_${index}`} value={o}>
+                    {o}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -165,7 +158,9 @@ export default function Sort(props: FilterProps) {
                 }}
               >
                 {["String", "Number", "Boolean"].map((t) => (
-                  <MenuItem value={t}>{t}</MenuItem>
+                  <MenuItem key={t} value={t}>
+                    {t}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -185,8 +180,12 @@ export default function Sort(props: FilterProps) {
                     }
                   }}
                 >
-                  <MenuItem value="True">True</MenuItem>
-                  <MenuItem value="False">False</MenuItem>
+                  <MenuItem key="true" value="True">
+                    True
+                  </MenuItem>
+                  <MenuItem key="false" value="False">
+                    False
+                  </MenuItem>
                 </Select>
               </FormControl>
             ) : (

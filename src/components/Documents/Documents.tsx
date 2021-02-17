@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import firebase from "../../Firebase";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -85,19 +85,19 @@ export default function Documents(props: DocumentsProps) {
     setLastRecord(null);
     setDocuments([]);
   };
-  
-  useEffect(() => {
-    const getDocuments = async () => {
+
+  const fetchData = useCallback(
+    async (last: DocumentSnapshot | null) => {
       if (props.collection.length < 1) return;
       setLoading(true);
       let query = firestore.collection(props.collection).limit(QUERY_LIMIT);
-  
+
       if (sortField) {
         query = query.orderBy(sortField.name, sortField.direction);
       } else {
         query = query.orderBy(firebase.firestore.FieldPath.documentId());
       }
-  
+
       if (filterList.length > 0) {
         filterList.forEach((filter: Filter) => {
           query = query.where(
@@ -109,18 +109,18 @@ export default function Documents(props: DocumentsProps) {
           );
         });
       }
-  
-      if (lastRecord) {
-        query = query.startAfter(lastRecord);
+
+      if (last) {
+        query = query.startAfter(last);
       }
-  
+
       try {
         const result = await query.get();
-  
+
         //TODO: handle case when collection is empty
         setLoading(false);
-  
-        setDocuments( documents => 
+
+        setDocuments((documents) =>
           documents.concat(
             result.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
           )
@@ -135,10 +135,13 @@ export default function Documents(props: DocumentsProps) {
         );
         console.log(error);
       }
-    };
-    getDocuments();
-  }, [sortField, filterList, lastRecord, props.collection]);
+    },
+    [sortField, filterList, props.collection]
+  );
 
+  useEffect(() => {
+    fetchData(null);
+  }, [fetchData]);
 
   //TODO : improve resetView function (should not receive sort parameter)
   const resetView = (sort: SortField | undefined) => {
@@ -189,7 +192,10 @@ export default function Documents(props: DocumentsProps) {
             <Filter
               filter={editingFilter}
               anchor={filterAnchor}
-              onClose={() => setFilterAnchor(null)}
+              onClose={() => {
+                setFilterAnchor(null);
+                setEditingFilter(undefined);
+              }}
               onSave={(filter: Filter) => saveFilter(filter)}
             />
           )}
@@ -243,8 +249,9 @@ export default function Documents(props: DocumentsProps) {
               <CircularProgress />
             </div>
           )}
-          {/* TODO: fix MORE button */}
-          {/* {lastRecord && <Button onClick={() => getDocuments()}>More</Button>} */}
+          {lastRecord && (
+            <Button onClick={() => fetchData(lastRecord)}>More</Button>
+          )}
         </div>
         <Document document={document} />
       </div>

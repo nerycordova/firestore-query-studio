@@ -102,8 +102,8 @@ export default function Sort(props: SortProps) {
                 }
               }}
             >
-              <MenuItem value="asc">Ascending</MenuItem>
-              <MenuItem value="desc">Descending</MenuItem>
+              <MenuItem value="asc" key="asc">Ascending</MenuItem>
+              <MenuItem value="desc" key="desc">Descending</MenuItem>
             </Select>
           </FormControl>
         </form>
