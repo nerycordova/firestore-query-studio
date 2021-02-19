@@ -9,11 +9,6 @@ import Button from "@material-ui/core/Button";
 
 import "./Sort.css";
 
-type SortField = {
-  name: string;
-  direction: "asc" | "desc" | undefined;
-};
-
 type SortProps = {
   anchor: HTMLDivElement | null;
   onClose: () => void;

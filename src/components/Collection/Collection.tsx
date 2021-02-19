@@ -13,7 +13,7 @@ import FolderOpen from "@material-ui/icons/FolderOpen";
 const firestore = firebase.firestore();
 
 type CollectionProps = {
-  selectedCollection: string;
+  selectedCollection: string | undefined;
   onSelectCollection: (collection: string) => void;
 };
 
@@ -80,7 +80,7 @@ export default function Collection(props: CollectionProps) {
                 <ListItem
                   button
                   key={collection}
-                  selected={collection === props.selectedCollection}
+                  selected={props.selectedCollection ? collection === props.selectedCollection : false}
                   onClick={() => props.onSelectCollection(collection)}
                 >
                   <ListItemIcon>

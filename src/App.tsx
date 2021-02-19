@@ -4,7 +4,7 @@ import Collection from "./components/Collection/Collection";
 import Documents from "./components/Documents/Documents";
 
 function App() {
-  const [collection, setCollection] = useState<string>("");
+  const [collection, setCollection] = useState<string | undefined>(undefined);
 
   return (
     <div className="App">
@@ -14,7 +14,7 @@ function App() {
           setCollection(collection);
         }}
       />
-      <Documents key={collection} collection={collection} />
+      {collection && <Documents key={collection} collection={collection} />}
     </div>
   );
 }

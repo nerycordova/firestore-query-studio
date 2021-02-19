@@ -1,9 +1,5 @@
 import "./Document.css";
 
-/**
- * TODO: build interface based on FB document metadata
- * or at least, {id: ...}
- */
 type DocumentProps = {
   document: {
     [key: string]: Record<string, any>[];

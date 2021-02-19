@@ -34,19 +34,6 @@ type DocumentsProps = {
   collection: string;
 };
 
-type SortField = {
-  name: string;
-  direction: "asc" | "desc" | undefined;
-};
-
-type Filter = {
-  id?: number;
-  field: string;
-  operator: "==" | "!=" | "<" | "<=" | ">" | ">="; //TODO: support other operators
-  valueType: "String" | "Number" | "Boolean";
-  value: string | number;
-};
-
 export default function Documents(props: DocumentsProps) {
   const [documents, setDocuments] = useState<any[]>([]);
   const [document, setDocument] = useState<any>(null);
@@ -117,7 +104,6 @@ export default function Documents(props: DocumentsProps) {
       try {
         const result = await query.get();
 
-        //TODO: handle case when collection is empty
         setLoading(false);
 
         setDocuments((documents) =>
@@ -143,8 +129,7 @@ export default function Documents(props: DocumentsProps) {
     fetchData(null);
   }, [fetchData]);
 
-  //TODO : improve resetView function (should not receive sort parameter)
-  const resetView = (sort: SortField | undefined) => {
+  const updateSort = (sort: SortField | undefined) => {
     setSortField(sort);
     setLastRecord(null);
     setDocuments([]);
@@ -167,14 +152,14 @@ export default function Documents(props: DocumentsProps) {
             onClick={(event: React.MouseEvent<HTMLDivElement>) =>
               setSortAnchor(event.currentTarget)
             }
-            onDelete={sortField ? () => resetView(undefined) : undefined}
+            onDelete={sortField ? () => updateSort(undefined) : undefined}
           />
           {sortAnchor && (
             <Sort
               anchor={sortAnchor}
               sort={sortField}
               onClose={() => setSortAnchor(null)}
-              onSave={(criteria: SortField) => resetView(criteria)}
+              onSave={(criteria: SortField) => updateSort(criteria)}
             />
           )}
         </div>
