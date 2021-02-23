@@ -18,7 +18,7 @@ A simple yet powerful application to query Firebase data.
 
 * Subcollections are not supported
 * It is not possible to edit/add/remove data
-* Since Firestore client libraries do not allow to list existing collections, collection names must be added manually (this is saved in local storage for convinience :smile: )
+* Since Firestore client libraries do not allow to list existing collections, collection names must be added manually (this is saved in local storage for convenience :smile: )
 * Config file can only be retrieved if there is a web project configured in Firebase
 
 > This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
