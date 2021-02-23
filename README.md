@@ -12,7 +12,7 @@ A simple yet powerful application to query Firebase data.
 
 * Clone this repo
 * Get Firebase config file from `Project Settings > General > Web App > Firebase SDK snippet > Config`
-* Paste its content in `config.ts`, just make sure that there is a `export default firebaseConfig;` at the end of the file, like it is in the [example file](./config.example.ts).
+* Paste its content in `config.ts`, just make sure that there is a `export default firebaseConfig;` at the end of the file, like it is in the [example file](./src/config.example.ts).
 
 ## Current Limitations
 
