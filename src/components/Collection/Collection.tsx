@@ -9,6 +9,8 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import FolderOpen from "@material-ui/icons/FolderOpen";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 const firestore = firebase.firestore();
 
@@ -33,6 +35,14 @@ export default function Collection(props: CollectionProps) {
       return;
     }
     setInputError(false);
+
+    let local_collections = localStorage.getItem("collections")?.split(",");
+
+    if (local_collections?.includes(newCollection)) {
+      alert("Collection already added");
+      return;
+    }
+
     //Validate if collection exists by retrieving 1 record from that collection
     const data = await firestore.collection(newCollection).limit(1).get();
     if (data.empty) {
@@ -40,13 +50,28 @@ export default function Collection(props: CollectionProps) {
       return;
     }
 
-    let local_collections = localStorage.getItem("collections")?.split(",");
     if (!local_collections) {
       local_collections = [];
     }
+
     local_collections.push(newCollection);
     localStorage.setItem("collections", local_collections.join(","));
     setCollections(local_collections);
+    setNewCollection("");
+  };
+
+  const deleteCollection = (collection: string) => {
+    let local_collections = localStorage.getItem("collections")?.split(",");
+    let new_collections: string[] = [];
+    local_collections?.forEach((col) =>
+      col !== collection ? new_collections.push(col) : null
+    );
+    if (new_collections.length === 0) {
+      localStorage.removeItem("collections");
+    } else {
+      localStorage.setItem("collections", new_collections.join(","));
+    }
+    setCollections(new_collections);
   };
 
   return (
@@ -80,13 +105,26 @@ export default function Collection(props: CollectionProps) {
                 <ListItem
                   button
                   key={collection}
-                  selected={props.selectedCollection ? collection === props.selectedCollection : false}
+                  selected={
+                    props.selectedCollection
+                      ? collection === props.selectedCollection
+                      : false
+                  }
                   onClick={() => props.onSelectCollection(collection)}
                 >
                   <ListItemIcon>
                     <FolderOpen />
                   </ListItemIcon>
                   <ListItemText primary={collection} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => deleteCollection(collection)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
                 </ListItem>
               );
             })}

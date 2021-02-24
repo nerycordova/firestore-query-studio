@@ -76,6 +76,7 @@ export default function Documents(props: DocumentsProps) {
   const fetchData = useCallback(
     async (last: DocumentSnapshot | null) => {
       if (props.collection.length < 1) return;
+      setDocument(null);
       setLoading(true);
       let query = firestore.collection(props.collection).limit(QUERY_LIMIT);
 
@@ -87,12 +88,16 @@ export default function Documents(props: DocumentsProps) {
 
       if (filterList.length > 0) {
         filterList.forEach((filter: Filter) => {
+          let filterValue: any = filter.value;
+          if (filter.valueType === "Boolean") {
+            filterValue = filter.value === "True";
+          }else if (filter.valueType === "Number"){
+            filterValue = Number(filter.value);
+          }
           query = query.where(
             filter.field,
             filter.operator,
-            filter.valueType === "Boolean"
-              ? filter.value === "True"
-              : filter.value
+            filterValue
           );
         });
       }
