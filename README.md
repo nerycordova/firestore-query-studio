@@ -6,7 +6,7 @@ A simple yet powerful application to query Firebase data.
 
 ## Functionality
 
-- Allows to read collections and documents
+- Read collections and documents
 - Filter collections on multiple fields!
 - Easy to setup
 
