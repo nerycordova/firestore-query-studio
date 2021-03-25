@@ -1,6 +1,6 @@
-# Firebase Query Studio
+# Firestore Query Studio
 
-A simple yet powerful application to query Firebase data.
+A simple yet powerful application to query Firestore data.
 
 ![firestore-query](./docs/firestore-query.gif)
 
