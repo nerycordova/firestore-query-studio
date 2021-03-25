@@ -13,7 +13,7 @@ A simple yet powerful application to query Firestore data.
 ## Setup
 
 - Clone this repo
-- Get Firebase config file from `Project Settings > General > Web App > Firebase SDK snippet > Config`
+- Get Firebase config file from Firebase Admin Panel : `Project Settings > General > Web App > Firebase SDK snippet > Config`
 - Paste its content in `config.ts`, just make sure that there is a `export default firebaseConfig;` at the end of the file, like it is in the [example file](./src/config.example.ts).
 - yarn install
 - yarn start
